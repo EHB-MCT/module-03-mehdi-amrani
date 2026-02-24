@@ -27,9 +27,18 @@ function draw() {
     let cellW = width / cols;
     let cellH = height / rows;
 
-
+    fill(0,150,220);
+    noStroke();
     // Loop through the sizes
-
+    for (let i = 0; i < cols; i++){ 
+        for (let j = 0; j < rows; j++) {
+            let index = i*j;
+            circle(i * cellW + cellW/2, j * cellH + cellH/2, sizes[index]);
+            
+            // fill(255);
+            // text(sizes[index], x, y);
+        }
+    }
     // Drawing
     // Check for found index: red or blue
 
@@ -38,8 +47,13 @@ function draw() {
 
 function resetData() {
     //generate sizes
-    //reset foundIndex
-    //calculate stats
+    sizes = [];
+    for (let i = 0; i < numCircles; i++) {
+        sizes.push(random(10,100));
+    }
+    //TODO reset foundIndex
+    foundIndex = -1;
+    //TODO calculate stats
 
 }
 
