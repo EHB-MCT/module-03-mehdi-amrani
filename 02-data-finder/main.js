@@ -1,7 +1,9 @@
 let sizes = [];
-let cols = 10;
-let rows = 10;
-let numCircles = cols * rows;
+const cols = 10;
+const rows = 10;
+const numCircles = cols * rows;
+const minSize = 10;
+const maxSize = 100;
 
 // Stores index for find function
 let foundIndex = -1;
@@ -24,90 +26,91 @@ function setup() {
 function draw() {
     background(255); // White background
 
-    let cellW = width / cols;
-    let cellH = height / rows;
+    const cellW = width / cols;
+    const cellH = height / rows;
 
     noStroke();
 
     // Loop through the sizes
-    for (let i = 0; i < cols; i++){ 
-        for (let j = 0; j < rows; j++) {
-            let index = j * cols + i;
+    for (let index = 0; index < sizes.length; index++) {
+        const x = index % cols;
+        const y = Math.floor(index / cols);
+        const circleSize = min(sizes[index], cellW * 0.85, cellH * 0.85);
 
-            // Check for found index: red or blue
-            if (index == foundIndex) {
-                fill("red");
-            } else {
-                fill(0, 150, 220);
-            }
-
-            circle(i * cellW + cellW/2, j * cellH + cellH/2, sizes[index]);
-            
-            // fill(255);
-            // text(sizes[index], x, y);
+        // Check for found index: red or blue
+        if (index === foundIndex) {
+            fill("red");
+        } else {
+            fill(0, 150, 220);
         }
+
+        circle(x * cellW + cellW / 2, y * cellH + cellH / 2, circleSize);
     }
 }
 
 function resetData() {
-    //generate sizes
+    // Generate whole numbers so findIndex can match the user's number exactly.
     sizes = [];
     for (let i = 0; i < numCircles; i++) {
-        sizes.push(random(10, 100));
+        sizes.push(floor(random(minSize, maxSize + 1)));
     }
-    //TODO reset foundIndex
+
     foundIndex = -1;
-    //TODO calculate stats
     calculateStats();
 }
 
 function findValue() {
-    //get input value
-    let inputValue = parseFloat(document.getElementById('find-input').value);
+    const inputElement = document.getElementById('find-input');
+    const rawValue = inputElement.value.trim();
+    const inputValue = Number(rawValue);
 
-    //search for value
-    foundIndex = sizes.findIndex(function(size) {
-        return Math.round(size) == Math.round(inputValue);
+    if (rawValue === "" || !Number.isFinite(inputValue)) {
+        foundIndex = -1;
+        alert("Enter a value to find.");
+        inputElement.focus();
+        return;
+    }
+
+    foundIndex = sizes.findIndex(function (size) {
+        return size === inputValue;
     });
 
-    //if value not found, alert
-    if (foundIndex == -1) {
+    if (foundIndex === -1) {
         alert("Value not found!");
     }
 }
 
 function sortUp() {
     // sort ascending
-    sizes.sort(function(sizeA, sizeB){
-        if (sizeA < sizeB) {
-            return -1;
-        } else {
-            return 1;
-        }
+    sizes.sort(function (sizeA, sizeB) {
+        return sizeA - sizeB;
     });
+    foundIndex = -1;
+    calculateStats();
 }
 
 function sortDown() {
     // sort descending
-    sizes.sort(function(sizeA, sizeB){
-        if (sizeA > sizeB) {
-            return -1;
-        } else {
-            return 1;
-        }
+    sizes.sort(function (sizeA, sizeB) {
+        return sizeB - sizeA;
     });
+    foundIndex = -1;
+    calculateStats();
 }
 
 function calculateStats() {
-    //use reduce to calculate total
-    let total = sizes.reduce(function(sum, size){
+    // Use reduce to calculate total
+    const total = sizes.reduce(function (sum, size) {
         return sum + size;
     }, 0);
 
-    //calculate average
-    let average = total / sizes.length;
+    const average = total / sizes.length;
 
-    //add both to DOM
-    document.querySelector("#total-mass").innerText = Math.round(total);
-    document.querySelector("#avg-size").innerText = Math.round(average);
+    document.querySelector("#total-mass").innerText = total;
+    document.querySelector("#avg-size").innerText = average.toFixed(1);
+}
+
+function windowResized() {
+    const container = document.getElementById('canvas-container');
+    resizeCanvas(container.offsetWidth, container.offsetHeight);
 }
